@@ -1,28 +1,32 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
-using Complete;
 using TMPro;
+using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
-    public int m_NumRoundsToWin = 5;        
-    public float m_StartDelay = 3f;         
-    public float m_EndDelay = 3f;           
+    public int m_NumRoundsToWin = 5;
+    public float m_StartDelay = 3f;
+    public float m_EndDelay = 3f;
     public CameraControl m_CameraControl;
     //public Text m_MessageText;
     public TextMeshProUGUI m_MessageText;
-    public GameObject m_TankPrefab;         
-    public TankManager[] m_Tanks;           
+    public GameObject m_TankPrefab;
+    public TankManager[] m_Tanks;
 
+    public EnemyManager EnemyManager;
 
     private int m_RoundNumber;              
     private WaitForSeconds m_StartWait;     
     private WaitForSeconds m_EndWait;       
     private TankManager m_RoundWinner;
-    private TankManager m_GameWinner;       
+    private TankManager m_GameWinner;
 
+    [HideInInspector]
+    public List<Transform> m_CamTargets;
+
+    private Transform player;
 
     const float k_MaxDepenetrationVelocity = float.PositiveInfinity;
 
@@ -35,15 +39,19 @@ public class GameManager : MonoBehaviour
         m_StartWait = new WaitForSeconds(m_StartDelay);
         m_EndWait = new WaitForSeconds(m_EndDelay);
 
-        SpawnAllTanks();
+        SpawnPlayerTanks();
+
+        EnemyManager.OnStart(this, player);
+        EnemyManager.SpawnEnemy(5);
+
         SetCameraTargets();
 
-        StartCoroutine(GameLoop());
+        //StartCoroutine(GameLoop());
     }
     #endregion
 
     #region 坦克初始化
-    private void SpawnAllTanks()
+    private void SpawnPlayerTanks()
     {
         for (int i = 0; i < m_Tanks.Length; i++)
         {
@@ -51,20 +59,20 @@ public class GameManager : MonoBehaviour
                 Instantiate(m_TankPrefab, m_Tanks[i].m_SpawnPoint.position, m_Tanks[i].m_SpawnPoint.rotation) as GameObject;
             var m_PlayerNumber = i + 1;
             m_Tanks[i].Setup(m_Instance, m_PlayerNumber);
+            player = m_Instance.transform;
         }
     }
 
-
     private void SetCameraTargets()
     {
-        Transform[] targets = new Transform[m_Tanks.Length];
+        //Transform[] targets = new Transform[m_Tanks.Length];
 
-        for (int i = 0; i < targets.Length; i++)
+        for (int i = 0; i < m_Tanks.Length; i++)
         {
-            targets[i] = m_Tanks[i].m_Instance.transform;
+            m_CamTargets.Add(m_Tanks[i].m_Instance.transform);
         }
 
-        m_CameraControl.m_Targets = targets;
+        m_CameraControl.m_Targets = m_CamTargets.ToArray();
     }
     #endregion
 

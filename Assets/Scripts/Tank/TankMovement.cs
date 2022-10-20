@@ -17,7 +17,9 @@ public class TankMovement : MonoBehaviour
     private float m_MovementInputValue;    
     private float m_TurnInputValue;        
     private float m_OriginalPitch;
-    
+
+    private bool m_Collision = false;
+
     #region sys callback
     private void Awake()
     {
@@ -53,6 +55,7 @@ public class TankMovement : MonoBehaviour
         // Store the player's input and make sure the audio for the engine is playing.
         m_MovementInputValue = Input.GetAxis(m_MovementAxisName);
         m_TurnInputValue     = Input.GetAxis(m_TurnAxisName);
+
     }
 
 
@@ -107,7 +110,7 @@ public class TankMovement : MonoBehaviour
         var turn = m_TurnInputValue * m_TurnSpeed * Time.deltaTime;
         Quaternion turnRot = Quaternion.Euler(0, turn, 0);
         m_Rigidbody.MoveRotation(m_Rigidbody.rotation * turnRot);
-        //transform.Rotate(new Vector3(0, turn, 0));
+        //transform.Rotate(transform.eulerAngles + new Vector3(0, turn, 0));
     }
     #endregion
 }

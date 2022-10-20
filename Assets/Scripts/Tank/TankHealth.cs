@@ -14,7 +14,8 @@ public class TankHealth : MonoBehaviour
     private AudioSource m_ExplosionAudio;          
     private ParticleSystem m_ExplosionParticles;   
     private float m_CurrentHealth;  
-    private bool m_Dead;            
+    private bool m_Dead;
+    public bool Dead => m_Dead;
 
 
     private void Awake()
@@ -49,8 +50,7 @@ public class TankHealth : MonoBehaviour
         }
         SetHealthUI();
     }
-
-
+    
     private void SetHealthUI()
     {
         // Adjust the value and colour of the slider.
@@ -79,6 +79,6 @@ public class TankHealth : MonoBehaviour
         m_ExplosionParticles.Play();
         m_ExplosionAudio.Play();
 
-        gameObject.SetActive(false);
+         gameObject.SetActive(false);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using Utilities.AttTypeDefine;
 
 /**
  * --坦克控制器
@@ -10,11 +11,12 @@ using UnityEngine;
 public class TankManager
 {
     public Color m_PlayerColor;            
-    public Transform m_SpawnPoint;         
+    public Transform m_SpawnPoint;       
     [HideInInspector] public int m_PlayerNumber;             
     [HideInInspector] public string m_ColoredPlayerText;
     [HideInInspector] public GameObject m_Instance;          
-    [HideInInspector] public int m_Wins;                     
+    [HideInInspector] public int m_Wins;
+    [HideInInspector] public AttackType type;
 
 
     private TankMovement m_Movement;       
@@ -43,7 +45,6 @@ public class TankManager
             renderers[i].material.color = m_PlayerColor;
         }
     }
-
 
     public void DisableControl()
     {
