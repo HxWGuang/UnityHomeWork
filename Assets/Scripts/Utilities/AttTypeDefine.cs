@@ -13,7 +13,7 @@ namespace Utilities.AttTypeDefine
 
     #endregion
 
-    #region Struct结构体
+    #region 结构体
 
     [System.Serializable]
     public struct EnemySpawnArea

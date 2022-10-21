@@ -8,7 +8,7 @@ public class TankHealth : MonoBehaviour
     public Image m_FillImage;                      
     public Color m_FullHealthColor = Color.green;  
     public Color m_ZeroHealthColor = Color.red;    
-    public GameObject m_ExplosionPrefab;
+    public GameObject m_ExplosionPrefab;           
     
     
     private AudioSource m_ExplosionAudio;          

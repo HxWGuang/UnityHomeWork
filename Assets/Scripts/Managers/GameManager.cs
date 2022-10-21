@@ -6,16 +6,15 @@ using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
-    public int m_NumRoundsToWin = 5;
-    public float m_StartDelay = 3f;
-    public float m_EndDelay = 3f;
-    public CameraControl m_CameraControl;
-    //public Text m_MessageText;
-    public TextMeshProUGUI m_MessageText;
-    public GameObject m_TankPrefab;
-    public TankManager[] m_Tanks;
+    public int m_NumRoundsToWin = 5;        
+    public float m_StartDelay = 3f;         
+    public float m_EndDelay = 3f;           
+    public CameraControl m_CameraControl;   
+    public TextMeshProUGUI m_MessageText;   
+    public GameObject m_TankPrefab;         
+    public TankManager[] m_Tanks;           
 
-    public EnemyManager EnemyManager;
+    public EnemyManager EnemyManager;       
 
     private int m_RoundNumber;              
     private WaitForSeconds m_StartWait;     
@@ -24,7 +23,7 @@ public class GameManager : MonoBehaviour
     private TankManager m_GameWinner;
 
     [HideInInspector]
-    public List<Transform> m_CamTargets;
+    public List<Transform> m_CamTargets;    
 
     private Transform player;
 

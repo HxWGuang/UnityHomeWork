@@ -2,13 +2,13 @@
 
 public class TankMovement : MonoBehaviour
 {
-    public int m_PlayerNumber = 1;          
+    public int m_PlayerNumber = 1;         
     public float m_Speed = 12f;            
     public float m_TurnSpeed = 180f;       
     public AudioSource m_MovementAudio;    
     public AudioClip m_EngineIdling;       
     public AudioClip m_EngineDriving;      
-    public float m_PitchRange = 0.2f;
+    public float m_PitchRange = 0.2f;      
 
     
     private string m_MovementAxisName;     
@@ -16,14 +16,14 @@ public class TankMovement : MonoBehaviour
     private Rigidbody m_Rigidbody;         
     private float m_MovementInputValue;    
     private float m_TurnInputValue;        
-    private float m_OriginalPitch;
-
-    private bool m_Collision = false;
+    protected float m_OriginalPitch;
+    private TankHealth _health;
 
     #region sys callback
     private void Awake()
     {
         m_Rigidbody = GetComponent<Rigidbody>();
+        _health = GetComponent<TankHealth>();
     }
 
 
@@ -32,12 +32,16 @@ public class TankMovement : MonoBehaviour
         m_Rigidbody.isKinematic = false;
         m_MovementInputValue = 0f;
         m_TurnInputValue = 0f;
+        
+        CollisionListener.onCollisionEnter.AddListener(StartCollision);
     }
 
 
     private void OnDisable ()
     {
         m_Rigidbody.isKinematic = true;
+        
+        CollisionListener.onCollisionEnter.RemoveListener(StartCollision);
     }
 
     
@@ -70,7 +74,7 @@ public class TankMovement : MonoBehaviour
     #endregion
 
     #region engine audio ctrl
-    private void EngineAudio()
+    protected virtual void EngineAudio()
     {
         // Play the correct audio clip based on whether or not the tank is moving and what audio is currently playing.
         if (Mathf.Abs(m_MovementInputValue) < 0.1f && Mathf.Abs(m_TurnInputValue) < 0.1f)
@@ -98,9 +102,9 @@ public class TankMovement : MonoBehaviour
     private void Move()
     {
         // Adjust the position of the tank based on the player's input.
-        var movement = transform.forward * m_MovementInputValue * m_Speed * Time.deltaTime;
-        m_Rigidbody.MovePosition(m_Rigidbody.position + movement);
-        //transform.Translate(movement);
+        // var movement = transform.forward * m_MovementInputValue * m_Speed * Time.deltaTime;
+        // m_Rigidbody.MovePosition(m_Rigidbody.position + movement);
+        m_Rigidbody.velocity = transform.forward * m_MovementInputValue * m_Speed;
     }
 
 
@@ -110,7 +114,38 @@ public class TankMovement : MonoBehaviour
         var turn = m_TurnInputValue * m_TurnSpeed * Time.deltaTime;
         Quaternion turnRot = Quaternion.Euler(0, turn, 0);
         m_Rigidbody.MoveRotation(m_Rigidbody.rotation * turnRot);
-        //transform.Rotate(transform.eulerAngles + new Vector3(0, turn, 0));
     }
+    #endregion
+
+    #region collision check
+    
+    public float m_MaxCollideForce = 600f;
+    public float m_MaxDamage = 10;
+    public float CalculateColldieDamage(float force)
+    {
+        force = Mathf.Clamp(force, 0, m_MaxCollideForce);
+        var rel = force / m_MaxCollideForce;
+        var damage = m_MaxDamage * rel;
+    
+        return damage;
+    }
+
+    public void StartCollision(GameObject obj, Collision col)
+    {
+        if (col.gameObject.layer == LayerMask.NameToLayer("Ground")) return;
+        
+        var force = (col.impulse / Time.fixedDeltaTime).magnitude;
+
+        var damage = CalculateColldieDamage(force);
+
+        _health.TakeDamage(damage);
+        var otherHealth = col.gameObject.GetComponent<TankHealth>();
+        if (null != otherHealth)
+        {
+            // Debug.Log($"othername = {otherHealth.gameObject.name}");
+            otherHealth.TakeDamage(m_MaxDamage * 1.2f);
+        }
+    }
+    
     #endregion
 }

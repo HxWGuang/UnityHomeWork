@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class EnemyManager : MonoBehaviour
 {
-    public LayerMask m_TankMask;
-    public GameObject m_TankEnemyPrefab;
-    public EnemySpawnArea[] enemySpawnAreas;
-    public EnemyColorMapping[] enemyColorMap;
-    public float m_MinRadius = 3f;
+    public LayerMask m_TankMask;                
+    public GameObject m_TankEnemyPrefab;        
+    public EnemySpawnArea[] enemySpawnAreas;    
+    public EnemyColorMapping[] enemyColorMap;   
+    public float m_MinRadius = 3f;              
 
     private GameManager gameMgr;
     private Transform palyerInst;

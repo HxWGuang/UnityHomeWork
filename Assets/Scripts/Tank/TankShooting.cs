@@ -16,19 +16,19 @@ public class TankShooting : MonoBehaviour
 
     
     private string m_FireButton;         
-    private float m_CurrentLaunchForce;  
-    private float m_ChargeSpeed;         
-    private bool m_Fired;                
+    protected float m_CurrentLaunchForce;  
+    protected float m_ChargeSpeed;         
+    protected bool m_Fired;                
 
 
-    private void OnEnable()
+    protected virtual void OnEnable()
     {
         m_CurrentLaunchForce = m_MinLaunchForce;
         m_AimSlider.value = m_MinLaunchForce;
     }
 
 
-    private void Start()
+    protected virtual void Start()
     {
         m_FireButton = "Fire" + m_PlayerNumber;
 
@@ -36,7 +36,7 @@ public class TankShooting : MonoBehaviour
     }
     
 
-    private void Update()
+    protected virtual void Update()
     {
         // Track the current state of the fire button and make decisions based on the current launch force.
         m_AimSlider.value = m_MinLaunchForce;
@@ -69,7 +69,7 @@ public class TankShooting : MonoBehaviour
     }
 
 
-    private void Fire()
+    protected virtual void Fire()
     {
         // Instantiate and launch the shell.
         m_Fired = true;

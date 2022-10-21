@@ -1,8 +1,7 @@
-using System;
+using System.Collections;
 using Utilities.AttTypeDefine;
 using UnityEngine;
 using UnityEngine.AI;
-using Utilities;
 
 public class EnemyCtr : MonoBehaviour
 {
@@ -16,83 +15,64 @@ public class EnemyCtr : MonoBehaviour
     public float maxSpeed = 12f;
     [Range(0,1)]
     public float speedRatio = 0.8f;
-
     public float attackDis;
+    public float MinAttackDely = 3f;
+    public float MaxAttackDely = 5f;
+
+    private Movement _mover;
+    private Fighter _fighter;
+    private bool _attacking = false;
 
     #region sys callback
 
     private void Awake()
     {
         _obstacle = GetComponent<NavMeshObstacle>();
+        _mover = GetComponent<Movement>();
+        _fighter = GetComponent<Fighter>();
     }
 
     private void OnEnable()
     {
         _obstacle.enabled = false;
+        _attacking = false;
     }
 
     private void Start()
     {
         _agent = GetComponent<NavMeshAgent>();
         _health = GetComponent<TankHealth>();
+
+        _mover.OnStart(_agent);
+        _fighter.OnStart(_playerInst, ackTyp, _mover);
     }
 
     private void Update()
     {
         if (_health.Dead) return;
 
-        // if (ackTyp == AttackType.eCloseRange)
-        // {
-        //     MoveTo(_playerInst.position);
-        // }
-        // else if (ackTyp == AttackType.eLongRange)
-        // {
-        //     if (Vector3.Distance(_playerInst.position, transform.position) > attackDis)
-        //     {
-        //         MoveTo(_playerInst.position);
-        //     }
-        //     else
-        //     {
-        //         StopMove();
-        //         AttackBehaviour();
-        //     }
-        // }
-
-        switch (ackTyp)
+        if (Vector3.Distance(_playerInst.position, transform.position) > attackDis)
         {
-            case AttackType.eCloseRange:
-            {
-                MoveTo(_playerInst.position);
-                break;
-            }
-
-            case AttackType.eLongRange:
-            {
-                if (Vector3.Distance(_playerInst.position, transform.position) > attackDis)
-                {
-                    _obstacle.enabled = false;
-                    // _obstacle.carving = false;
-                    this.InvokeNextFrame((() =>
-                    {
-                        _agent.enabled = true;
-                        MoveTo(_playerInst.position);
-                    }));
-                }
-                else
-                {
-                    StopMove();
-                    _agent.enabled = false;
-                    this.InvokeNextFrame((() =>
-                    {
-                        _obstacle.enabled = true;
-                        // _obstacle.carving = true;
-                    }));
-                    
-                    AttackBehaviour();
-                }
-
-                break;
-            }
+            _attacking = false;
+            StopAllCoroutines();
+            MoveTo(_playerInst.position);
+        }
+        else
+        {
+            if (_attacking) return;
+            
+            _attacking = true;
+            StopMove();
+            // if (delay < MaxAttackDely)
+            // {
+            //     delay += Time.deltaTime;
+            // }
+            // else
+            // {
+            //     StartAttack();
+            //     delay = 0f;
+            // }
+            StartCoroutine(DelayToAttack());
         }
     }
     
@@ -110,30 +90,45 @@ public class EnemyCtr : MonoBehaviour
             renderers[i].material.color = color;
         }
     }
+    
+    IEnumerator DelayToAttack()
+    {
+        while (true)
+        {
+            var num = Random.Range(0, 101);
+            if (num < 30)
+            {
+                var dely = Random.Range(MinAttackDely, MaxAttackDely);
+                yield return new WaitForSeconds(dely);
+                StartAttack();
+            }
+            else
+                yield return null;
+        }
+    }
 
     private void MoveTo(Vector3 target)
     {
-        _agent.SetDestination(target);
-        _agent.speed = maxSpeed * speedRatio;
+        _mover.MoveTo(target, maxSpeed * speedRatio);
     }
     
-    private void AttackBehaviour()
+    private void StartAttack()
     {
-        return;
+        _fighter.StartAttack();
     }
 
     private void StopMove()
     {
-        _agent.velocity = Vector3.zero;
+        _mover.Stop();
     }
 
     public void DisableAI()
     {
-        _agent.isStopped = true;
+        _agent.enabled = false;
     }
 
     public void EnableAI()
     {
-        _agent.isStopped = false;
+        _agent.enabled = true;
     }
 }
