@@ -10,17 +10,24 @@ public class GameManager : MonoBehaviour
     public float m_StartDelay = 3f;         
     public float m_EndDelay = 3f;           
     public CameraControl m_CameraControl;   
-    public TextMeshProUGUI m_MessageText;   
+    public TextMeshProUGUI m_MessageText;
+    public TextMeshProUGUI m_EnemyNumText;
     public GameObject m_TankPrefab;         
-    public TankManager[] m_Tanks;           
+    public TankManager[] m_Tanks;
 
-    public EnemyManager EnemyManager;       
+    public EnemyManager EnemyMgr;       
 
     private int m_RoundNumber;              
     private WaitForSeconds m_StartWait;     
     private WaitForSeconds m_EndWait;       
     private TankManager m_RoundWinner;
     private TankManager m_GameWinner;
+    private int enemyNumRange = 3;
+    private int enemyNum;
+
+    public float roundTimer = 30f;
+    public int initialEnemyCount = 3;
+    public int eachRoundTime = 30;
 
     [HideInInspector]
     public List<Transform> m_CamTargets;    
@@ -40,17 +47,19 @@ public class GameManager : MonoBehaviour
 
         SpawnPlayerTanks();
 
-        EnemyManager.OnStart(this, player);
+        #region 敌人初始化
 
-        EnemyManager.SpawnEnemy(5);
+        EnemyMgr.OnStart(this, player);
+        EnemyMgr.SpawnEnemy(initialEnemyCount);
+        enemyNum = initialEnemyCount;
 
-        SetCameraTargets();
+        #endregion
 
-        //StartCoroutine(GameLoop());
+        StartCoroutine(GameLoop());
     }
     #endregion
 
-    #region 坦克初始化
+    #region 玩家初始化
     private void SpawnPlayerTanks()
     {
         for (int i = 0; i < m_Tanks.Length; i++)
@@ -62,18 +71,25 @@ public class GameManager : MonoBehaviour
             player = m_Instance.transform;
         }
     }
+    #endregion
+
+    #region 相机初始化
 
     private void SetCameraTargets()
     {
-        //Transform[] targets = new Transform[m_Tanks.Length];
-
         for (int i = 0; i < m_Tanks.Length; i++)
         {
             m_CamTargets.Add(m_Tanks[i].m_Instance.transform);
         }
 
+        // for (int i = 0; i < EnemyMgr.enemyList.Count; i++)
+        // {
+        //     m_CamTargets.Add(EnemyMgr.enemyList[i].transform);
+        // }
+        
         m_CameraControl.m_Targets = m_CamTargets.ToArray();
     }
+
     #endregion
 
     #region 游戏状态
@@ -83,7 +99,7 @@ public class GameManager : MonoBehaviour
         yield return StartCoroutine(RoundPlaying());
         yield return StartCoroutine(RoundEnding());
 
-        if (m_GameWinner != null)
+        if (PlayerWinTheGame() || !PlayerWinTheRound())
         {
             SceneManager.LoadScene(0);
         }
@@ -96,13 +112,18 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator RoundStarting()
     {
+        SetCameraTargets();
+        
         ResetAllTanks();
         DisableTankControl();
+        DisableEnemy();
 
         m_CameraControl.SetStartPositionAndSize();
 
         m_RoundNumber++;
-        m_MessageText.text = "ROUND " + m_RoundNumber;
+        m_MessageText.text = "第 " + m_RoundNumber + " 波敌人来袭！";
+
+        m_EnemyNumText.text = enemyNum.ToString();
 
         yield return m_StartWait;
     }
@@ -111,11 +132,13 @@ public class GameManager : MonoBehaviour
     private IEnumerator RoundPlaying()
     {
         EnableTankControl();
+        EnableEnemy();
 
         m_MessageText.text = string.Empty;
 
-        while (!OneTankLeft())
+        while (HaveTankLeft() && HaveEnemyLeft())
         {
+            m_EnemyNumText.text = EnemyMgr.GetCurEnemyNum().ToString();
             yield return null;
         }
     }
@@ -124,25 +147,27 @@ public class GameManager : MonoBehaviour
     private IEnumerator RoundEnding()
     {
         DisableTankControl();
+        DisableEnemy();
 
-        m_RoundWinner = null;
-        m_RoundWinner = GetRoundWinner();
-
-        if (null != m_RoundWinner)
+        if (PlayerWinTheRound())
         {
-            m_RoundWinner.m_Wins++;
+            m_EnemyNumText.text = "0";
+            RefreshEnemy();
         }
 
-        m_GameWinner = GetGameWinner();
-
-        var msg = EndMessage();
-        m_MessageText.text = msg;
+        m_MessageText.text = EndMessage();
 
         yield return m_EndWait;
     }
 
+    private void RefreshEnemy()
+    {
+        var num = Random.Range(enemyNum, enemyNum + enemyNumRange + 1);
+        EnemyMgr.SpawnEnemy(num);
+        enemyNum = num;
+    }
 
-    private bool OneTankLeft()
+    private bool HaveTankLeft()
     {
         int numTanksLeft = 0;
 
@@ -152,7 +177,12 @@ public class GameManager : MonoBehaviour
                 numTanksLeft++;
         }
 
-        return numTanksLeft <= 1;
+        return numTanksLeft >= 1;
+    }
+
+    private bool HaveEnemyLeft()
+    {
+        return EnemyMgr.GetCurEnemyNum() >= 1;
     }
 
 
@@ -179,26 +209,68 @@ public class GameManager : MonoBehaviour
         return null;
     }
 
+    private bool PlayerWinTheRound()
+    {
+        if (!HaveTankLeft())
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool PlayerWinTheGame()
+    {
+        if (m_RoundNumber >= m_NumRoundsToWin)
+        {
+            if (HaveTankLeft())
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     private string EndMessage()
     {
-        string message = "DRAW!";
+        string message = "结束！";
 
-        if (m_RoundWinner != null)
-            message = m_RoundWinner.m_ColoredPlayerText + " WINS THE ROUND!";
-
+        // if (m_RoundWinner != null)
+        //     message = m_RoundWinner.m_ColoredPlayerText + " WINS THE ROUND!";
+        
         message += "\n\n\n\n";
+        //
+        // for (int i = 0; i < m_Tanks.Length; i++)
+        // {
+        //     message += m_Tanks[i].m_ColoredPlayerText + ": " + m_Tanks[i].m_Wins + " WINS\n";
+        // }
+        //
+        // if (m_GameWinner != null)
+        //     message = m_GameWinner.m_ColoredPlayerText + " WINS THE GAME!";
 
-        for (int i = 0; i < m_Tanks.Length; i++)
+        if (PlayerWinTheRound())
         {
-            message += m_Tanks[i].m_ColoredPlayerText + ": " + m_Tanks[i].m_Wins + " WINS\n";
+            message += "成功抵挡住了进攻！";
         }
-
-        if (m_GameWinner != null)
-            message = m_GameWinner.m_ColoredPlayerText + " WINS THE GAME!";
+        else
+        {
+            message += "挑战失败！";
+        }
+        
+        if (PlayerWinTheGame())
+        {
+            message = "游戏结束，挑战成功！";
+        }
 
         return message;
     }
+
+    private void ShowMessage(string msg)
+    {
+        m_MessageText.text = msg;
+    }
+    
     #endregion
 
     #region 坦克状态控制
@@ -226,6 +298,16 @@ public class GameManager : MonoBehaviour
         {
             m_Tanks[i].DisableControl();
         }
+    }
+
+    private void EnableEnemy()
+    {
+        EnemyMgr.EnableEnemy();
+    }
+    
+    private void DisableEnemy()
+    {
+        EnemyMgr.DisableEnemy();
     }
     #endregion
 }

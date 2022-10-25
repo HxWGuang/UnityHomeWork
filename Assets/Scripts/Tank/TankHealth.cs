@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using Utilities.AttTypeDefine;
 
 public class TankHealth : MonoBehaviour
 {
@@ -16,8 +17,9 @@ public class TankHealth : MonoBehaviour
     private float m_CurrentHealth;  
     private bool m_Dead;
     public bool Dead => m_Dead;
-
-
+    
+    public EnemyDeathEvent onEnemyDeath = new EnemyDeathEvent();
+    
     private void Awake()
     {
         m_ExplosionParticles = Instantiate(m_ExplosionPrefab).GetComponent<ParticleSystem>();
@@ -53,16 +55,6 @@ public class TankHealth : MonoBehaviour
     
     private void SetHealthUI()
     {
-        // Adjust the value and colour of the slider.
-        //if (m_Dead)
-        //{
-        //    m_FillImage.color = m_ZeroHealthColor;
-        //}
-        //else
-        //{
-        //    m_FillImage.color = m_FullHealthColor;
-        //}
-
         m_Slider.value = m_CurrentHealth;
         m_FillImage.color = Color.Lerp(m_ZeroHealthColor, m_FullHealthColor, m_CurrentHealth / m_StartingHealth);
     }
@@ -79,6 +71,17 @@ public class TankHealth : MonoBehaviour
         m_ExplosionParticles.Play();
         m_ExplosionAudio.Play();
 
-         gameObject.SetActive(false);
+        gameObject.SetActive(false);
+         
+        // if (gameObject.CompareTag("Enemy"))
+        // {
+        //  onEnemyDeath?.Invoke();
+        // }
+    }
+
+    public void DestroyTank()
+    {
+        Destroy(m_ExplosionParticles, m_ExplosionParticles.main.duration);
+        Destroy(gameObject);
     }
 }

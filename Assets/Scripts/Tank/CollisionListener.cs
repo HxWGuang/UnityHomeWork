@@ -7,6 +7,6 @@ public class CollisionListener : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        onCollisionEnter.Invoke(gameObject, collision);
+        onCollisionEnter?.Invoke(gameObject, collision);
     }
 }

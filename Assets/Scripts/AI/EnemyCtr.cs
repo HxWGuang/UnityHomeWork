@@ -22,6 +22,7 @@ public class EnemyCtr : MonoBehaviour
     private Movement _mover;
     private Fighter _fighter;
     private bool _attacking = false;
+    private bool isEnable = false;
 
     #region sys callback
 
@@ -30,19 +31,19 @@ public class EnemyCtr : MonoBehaviour
         // _obstacle = GetComponent<NavMeshObstacle>();
         _mover = GetComponent<Movement>();
         _fighter = GetComponent<Fighter>();
+        _agent = GetComponent<NavMeshAgent>();
+        _health = GetComponent<TankHealth>();
     }
 
     private void OnEnable()
     {
         // _obstacle.enabled = false;
         _attacking = false;
+        isEnable = false;
     }
 
     private void Start()
     {
-        _agent = GetComponent<NavMeshAgent>();
-        _health = GetComponent<TankHealth>();
-
         _mover.OnStart(_agent);
         _fighter.OnStart(_playerInst, ackTyp, _mover);
     }
@@ -50,6 +51,8 @@ public class EnemyCtr : MonoBehaviour
     private void Update()
     {
         if (_health.Dead) return;
+        if (!_agent.enabled) return;
+        if (!isEnable) return;
 
         if (Vector3.Distance(_playerInst.position, transform.position) > attackDis)
         {
@@ -63,15 +66,6 @@ public class EnemyCtr : MonoBehaviour
 
             _attacking = true;
             StopMove();
-            // if (delay < MaxAttackDely)
-            // {
-            //     delay += Time.deltaTime;
-            // }
-            // else
-            // {
-            //     StartAttack();
-            //     delay = 0f;
-            // }
             StartCoroutine(DelayToAttack());
         }
     }
@@ -125,10 +119,15 @@ public class EnemyCtr : MonoBehaviour
     public void DisableAI()
     {
         _agent.enabled = false;
+        _attacking = false;
+        isEnable = false;
+
+        StopAllCoroutines();
     }
 
     public void EnableAI()
     {
         _agent.enabled = true;
+        isEnable = true;
     }
 }

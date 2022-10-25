@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using Utilities.AttTypeDefine;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class EnemyManager : MonoBehaviour
 {
@@ -12,12 +14,25 @@ public class EnemyManager : MonoBehaviour
 
     private GameManager gameMgr;
     private Transform palyerInst;
-    private List<EnemyCtr> enemyList = new List<EnemyCtr>();
+    public List<EnemyCtr> enemyList = new List<EnemyCtr>();
 
     public void OnStart(GameManager gameMgr, Transform player)
     {
         this.gameMgr = gameMgr;
         palyerInst = player;
+    }
+
+    public int GetCurEnemyNum()
+    {
+        var count = 0;
+        for (int i = 0; i < enemyList.Count; i++)
+        {
+            if (enemyList[i].gameObject.activeSelf)
+            {
+                count++;
+            }
+        }
+        return count;
     }
 
     public void SpawnEnemy(int total)
@@ -45,9 +60,11 @@ public class EnemyManager : MonoBehaviour
 
             var enemyCtr = tank.GetComponent<EnemyCtr>();
             enemyCtr.Setup(tank, type, GetColor(type), palyerInst);
-            enemyList.Add(enemyCtr);
             
-            gameMgr.m_CamTargets.Add(tank.transform);
+            // tank.GetComponent<TankHealth>().onEnemyDeath.AddListener(OnEnemyDead);
+            
+            enemyList.Add(enemyCtr);
+            // gameMgr.m_CamTargets.Add(tank.transform);
         }
     }
 
@@ -64,6 +81,61 @@ public class EnemyManager : MonoBehaviour
         return Color.white;
     }
 
+    // public void OnEnemyDead()
+    // {
+    // for (int i = 0; i < enemyList.Count; i++)
+    // {
+    //     if (!enemyList[i].gameObject.activeSelf)
+    //     {
+    //         enemyList.Remove(enemyList[i]);
+    //     }
+    // }
+
+        // 耦合太高了，这里要改gameMgr.m_CamTargets这个列表，但是CameraControl里也需要用到这个列表的信息
+        // var targetList = gameMgr.m_CamTargets;
+        // var remIdx = 0;
+        // for (int i = 0; i < targetList.Count; i++)
+        // {
+        //     if (targetList[i].CompareTag("Enemy") && !targetList[i].gameObject.activeSelf)
+        //     {
+        //         targetList.Remove(targetList[i]);
+        //         
+        //         var health = targetList[i].GetComponent<TankHealth>();
+        //         health.DestroyTank();
+        //         return;
+        //     }
+        // }
+
+        // DestroyTank(remIdx);
+    // }
+
+    private void DestroyDeadTank()
+    {
+        for (int i = 0; i < enemyList.Count; i++)
+        {
+            if (!enemyList[i].gameObject.activeSelf)
+            {
+                enemyList.Remove(enemyList[i]);
+            }
+        }
+    }
+
+    public void EnableEnemy()
+    {
+        for (int i = 0; i < enemyList.Count; i++)
+        {
+            enemyList[i].EnableAI();
+        }
+    }
+    
+    public void DisableEnemy()
+    {
+        for (int i = 0; i < enemyList.Count; i++)
+        {
+            enemyList[i].DisableAI();
+        }
+    }
+    
 #if UNITY_EDITOR
     private void OnDrawGizmos()
     {
