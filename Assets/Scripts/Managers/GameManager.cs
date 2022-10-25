@@ -41,6 +41,7 @@ public class GameManager : MonoBehaviour
         SpawnPlayerTanks();
 
         EnemyManager.OnStart(this, player);
+
         EnemyManager.SpawnEnemy(5);
 
         SetCameraTargets();

@@ -16,7 +16,7 @@ public class TankMovement : MonoBehaviour
     private Rigidbody m_Rigidbody;         
     private float m_MovementInputValue;    
     private float m_TurnInputValue;        
-    protected float m_OriginalPitch;
+    private float m_OriginalPitch;
     private TankHealth _health;
 
     #region sys callback
@@ -74,7 +74,7 @@ public class TankMovement : MonoBehaviour
     #endregion
 
     #region engine audio ctrl
-    protected virtual void EngineAudio()
+    private void EngineAudio()
     {
         // Play the correct audio clip based on whether or not the tank is moving and what audio is currently playing.
         if (Mathf.Abs(m_MovementInputValue) < 0.1f && Mathf.Abs(m_TurnInputValue) < 0.1f)
@@ -137,7 +137,7 @@ public class TankMovement : MonoBehaviour
         var force = (col.impulse / Time.fixedDeltaTime).magnitude;
 
         var damage = CalculateColldieDamage(force);
-
+        
         _health.TakeDamage(damage);
         var otherHealth = col.gameObject.GetComponent<TankHealth>();
         if (null != otherHealth)

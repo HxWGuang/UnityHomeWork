@@ -31,6 +31,7 @@ namespace Utilities.AttTypeDefine
 
     #endregion
 
+    
     #region 事件
 
     public class CollisionEvent : UnityEvent<GameObject, Collision>{}

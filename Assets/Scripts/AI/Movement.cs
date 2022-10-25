@@ -1,8 +1,15 @@
+using System;
 using UnityEngine;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
-public class Movement : TankMovement
+public class Movement : MonoBehaviour
 {
+    public AudioSource m_MovementAudio;    
+    public AudioClip m_EngineIdling;       
+    public AudioClip m_EngineDriving;      
+    public float m_PitchRange = 0.2f;      
+    private float m_OriginalPitch;
     private NavMeshAgent _agent;
     private bool isMoving = false;
 
@@ -11,9 +18,16 @@ public class Movement : TankMovement
         isMoving = false;
     }
 
+    private void FixedUpdate()
+    {
+        EngineAudio();
+    }
+    
     public void OnStart(NavMeshAgent agent)
     {
         _agent = agent;
+
+        m_OriginalPitch = m_MovementAudio.pitch;
     }
 
     public void MoveTo(Vector3 des, float speed)
@@ -38,7 +52,7 @@ public class Movement : TankMovement
         isMoving = false;
     }
 
-    protected override void EngineAudio()
+    private void EngineAudio()
     {
         if (isMoving)
         {

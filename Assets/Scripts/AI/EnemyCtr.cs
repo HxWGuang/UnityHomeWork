@@ -7,7 +7,7 @@ public class EnemyCtr : MonoBehaviour
 {
     private AttackType ackTyp;
     private NavMeshAgent _agent;
-    private NavMeshObstacle _obstacle;
+    // private NavMeshObstacle _obstacle;
     private Transform _playerInst;
     private GameObject m_Instance;
     private TankHealth _health;
@@ -27,14 +27,14 @@ public class EnemyCtr : MonoBehaviour
 
     private void Awake()
     {
-        _obstacle = GetComponent<NavMeshObstacle>();
+        // _obstacle = GetComponent<NavMeshObstacle>();
         _mover = GetComponent<Movement>();
         _fighter = GetComponent<Fighter>();
     }
 
     private void OnEnable()
     {
-        _obstacle.enabled = false;
+        // _obstacle.enabled = false;
         _attacking = false;
     }
 
@@ -53,14 +53,14 @@ public class EnemyCtr : MonoBehaviour
 
         if (Vector3.Distance(_playerInst.position, transform.position) > attackDis)
         {
-            _attacking = false;
             StopAllCoroutines();
+            _attacking = false;
             MoveTo(_playerInst.position);
         }
         else
         {
             if (_attacking) return;
-            
+
             _attacking = true;
             StopMove();
             // if (delay < MaxAttackDely)
